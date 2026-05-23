@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心电监护标准5导联正确安放位置配对</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #e6f7ff; /* 浅蓝色背景 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            padding: 20px 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0, 120, 215, 0.2);
+        }
+        
+        h1 {
+            color: #0066cc;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 30px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            margin-bottom: 20px;
+            padding: 15px 25px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 120, 215, 0.15);
+        }
+        
+        .timer, .matches, .instructions {
+            font-size: 1.2rem;
+            color: #0066cc;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .bubbles-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 25px;
+            width: 90%;
+            justify-items: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .bubble {
+            width: 180px;
+            height: 180px;
+            background-color: #80d4ff; /* 浅蓝色泡泡 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            box-shadow: 
+                inset 0 -8px 10px rgba(0, 100, 200, 0.2),
+                0 10px 20px rgba(0, 100, 200, 0.3);
+            transition: all 0.3s ease;
+            user-select: none;
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: #003366;
+            line-height: 1.4;
+            word-wrap: break-word;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* 3D泡泡效果 */
+        .bubble::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+        }
+        
+        .bubble:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                inset 0 -8px 10px rgba(0, 100, 200, 0.3),
+                0 12px 25px rgba(0, 100, 200, 0.4);
+        }
+        
+        .bubble.selected {
+            background-color: #4dc3ff;
+            transform: scale(1.08);
+            box-shadow: 
+                inset 0 -8px 10px rgba(0, 100, 200, 0.4),
+                0 0 0 5px rgba(255, 255, 255, 0.9),
+                0 15px 30px rgba(0, 100, 200, 0.5);
+        }
+        
+        .bubble.matched {
+            visibility: hidden;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s ease;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            background-color: #0066cc;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 0 #004a99;
+        }
+        
+        button:hover {
+            background-color: #0080ff;
+            transform: translateY(-3px);
+            box-shadow: 0 9px 0 #004a99;
+        }
+        
+        button:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #004a99;
+        }
+        
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 102, 204, 0.9);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+        
+        .success-content {
+            background-color: #4dc3ff;
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        .success-content h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .success-content p {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1200px) {
+            .bubble {
+                width: 160px;
+                height: 160px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .bubbles-container {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(4, 1fr);
+                gap: 20px;
+            }
+            
+            .bubble {
+                width: 150px;
+                height: 150px;
+                font-size: 1.1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .bubbles-container {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, 1fr);
+                gap: 15px;
+            }
+            
+            .bubble {
+                width: 140px;
+                height: 140px;
+                font-size: 1rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bubbles-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(10, 1fr);
+                gap: 12px;
+            }
+            
+            .bubble {
+                width: 200px;
+                height: 200px;
+                font-size: 1.1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>心电监护标准5导联正确安放位置配对</h1>
+        <p class="instructions">点击两个泡泡进行配对，匹配正确的导联名称和安放位置</p>
+    </div>
+    
+    <div class="game-container">
+        <div class="game-info">
+            <div class="timer">时间: <span id="time">00:00</span></div>
+            <div class="matches">已匹配: <span id="matched-count">0</span>/5</div>
+            <div class="instructions">游戏说明: 点击泡泡，将导联名称与其正确安放位置配对</div>
+        </div>
+        
+        <div class="bubbles-container" id="bubbles-container">
+            <!-- 泡泡将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="controls">
+            <button id="restart-btn">重新开始</button>
+            <button id="continue-btn" style="display:none;">继续挑战</button>
+        </div>
+    </div>
+    
+    <div class="success-message" id="success-message">
+        <div class="success-content">
+            <h2>恭喜你挑战成功！</h2>
+            <p>完成时间: <span id="final-time">00:00</span></p>
+            <button id="new-challenge-btn">继续挑战</button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏数据 - 导联名称及其对应的正确位置
+        const leadPairs = {
+            'RA': '胸骨右侧锁骨中线第一肋间',
+            'LA': '胸骨左侧锁骨中线第一肋间',
+            'V': '胸骨右缘第四肋间',
+            'RL': '右锁骨中线剑突水平处',
+            'LL': '左侧锁骨中线剑突水平处'
+        };
+        
+        // 游戏状态变量
+        let selectedBubbles = [];
+        let matchedPairs = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let gameActive = false;
+        
+        // DOM元素
+        const bubblesContainer = document.getElementById('bubbles-container');
+        const timeDisplay = document.getElementById('time');
+        const matchedCountDisplay = document.getElementById('matched-count');
+        const successMessage = document.getElementById('success-message');
+        const finalTimeDisplay = document.getElementById('final-time');
+        const restartBtn = document.getElementById('restart-btn');
+        const continueBtn = document.getElementById('continue-btn');
+        const newChallengeBtn = document.getElementById('new-challenge-btn');
+        
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            selectedBubbles = [];
+            matchedPairs = 0;
+            matchedCountDisplay.textContent = '0';
+            gameActive = true;
+            
+            // 清除泡泡容器
+            bubblesContainer.innerHTML = '';
+            
+            // 创建所有泡泡内容（名称和位置）
+            const bubbleContents = [];
+            
+            // 添加导联名称
+            for (const lead in leadPairs) {
+                bubbleContents.push(lead);
+            }
+            
+            // 添加位置描述
+            for (const position of Object.values(leadPairs)) {
+                bubbleContents.push(position);
+            }
+            
+            // 随机排序泡泡内容
+            shuffleArray(bubbleContents);
+            
+            // 创建泡泡元素
+            bubbleContents.forEach(content => {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = content;
+                bubble.dataset.content = content;
+                
+                // 添加点击事件
+                bubble.addEventListener('click', () => handleBubbleClick(bubble));
+                
+                bubblesContainer.appendChild(bubble);
+            });
+            
+            // 启动计时器
+            startTimer();
+        }
+        
+        // 处理泡泡点击
+        function handleBubbleClick(bubble) {
+            if (!gameActive) return;
+            
+            // 如果已经选中，则取消选中
+            if (bubble.classList.contains('selected')) {
+                bubble.classList.remove('selected');
+                selectedBubbles = selectedBubbles.filter(b => b !== bubble);
+                return;
+            }
+            
+            // 如果已经匹配，则忽略点击
+            if (bubble.classList.contains('matched')) {
+                return;
+            }
+            
+            // 最多只能选择两个泡泡
+            if (selectedBubbles.length >= 2) {
+                // 先清除之前选中的泡泡
+                selectedBubbles.forEach(b => b.classList.remove('selected'));
+                selectedBubbles = [];
+            }
+            
+            // 选中当前泡泡
+            bubble.classList.add('selected');
+            selectedBubbles.push(bubble);
+            
+            // 如果选中了两个泡泡，检查是否匹配
+            if (selectedBubbles.length === 2) {
+                setTimeout(checkMatch, 500);
+            }
+        }
+        
+        // 检查两个选中的泡泡是否匹配
+        function checkMatch() {
+            if (selectedBubbles.length !== 2) return;
+            
+            const bubble1 = selectedBubbles[0];
+            const bubble2 = selectedBubbles[1];
+            const content1 = bubble1.dataset.content;
+            const content2 = bubble2.dataset.content;
+            
+            // 检查是否为匹配对
+            let isMatch = false;
+            
+            // 检查 content1 是否为导联名称，content2 是否为对应的位置
+            if (leadPairs[content1] === content2) {
+                isMatch = true;
+            }
+            // 检查 content2 是否为导联名称，content1 是否为对应的位置
+            else if (leadPairs[content2] === content1) {
+                isMatch = true;
+            }
+            
+            if (isMatch) {
+                // 匹配成功
+                bubble1.classList.add('matched');
+                bubble2.classList.add('matched');
+                matchedPairs++;
+                matchedCountDisplay.textContent = matchedPairs;
+                
+                // 检查游戏是否结束
+                if (matchedPairs === 5) {
+                    endGame();
+                }
+            } else {
+                // 匹配失败，取消选中状态
+                bubble1.classList.remove('selected');
+                bubble2.classList.remove('selected');
+            }
+            
+            // 清空选中的泡泡数组
+            selectedBubbles = [];
+        }
+        
+        // 结束游戏
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            // 显示成功消息
+            finalTimeDisplay.textContent = timeDisplay.textContent;
+            successMessage.style.display = 'flex';
+            continueBtn.style.display = 'inline-block';
+        }
+        
+        // 开始计时器
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            startTime = new Date();
+            timeDisplay.textContent = '00:00';
+            
+            timerInterval = setInterval(() => {
+                const currentTime = new Date();
+                const elapsed = new Date(currentTime - startTime);
+                
+                const minutes = String(elapsed.getMinutes()).padStart(2, '0');
+                const seconds = String(elapsed.getSeconds()).padStart(2, '0');
+                
+                timeDisplay.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+        
+        // 工具函数：随机打乱数组
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        // 事件监听器
+        restartBtn.addEventListener('click', () => {
+            successMessage.style.display = 'none';
+            continueBtn.style.display = 'none';
+            initGame();
+        });
+        
+        continueBtn.addEventListener('click', () => {
+            successMessage.style.display = 'none';
+            continueBtn.style.display = 'none';
+            initGame();
+        });
+        
+        newChallengeBtn.addEventListener('click', () => {
+            successMessage.style.display = 'none';
+            continueBtn.style.display = 'none';
+            initGame();
+        });
+        
+        // 页面加载时初始化游戏
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
